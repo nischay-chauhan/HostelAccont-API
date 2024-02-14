@@ -12,28 +12,29 @@ datasource db {
 
 model Student {
   id            Int       @id @default(autoincrement())
-  rollNo        String
-  hostelNumber  String
-  hostelName    String
-  name          String
-  age           Int
-  email         String
-  department    String
+  rollNo        String    @unique
+  hostelNumber  String    
+  hostelName    String     
+  name          String    
+  email         String    @unique
+  department    String     
   semester      Int
-  hostelRollNo  String
-  roomNumber    String
-  role          String
+  hostelRollNo  String    @unique
+  roomNumber    String    
   orders        OrderBill[]
+  role          String    @default("student")
+  password      String    
 }
 
 model Incharge {
   id            Int       @id @default(autoincrement())
   name          String
-  email         String
-  hostelNumber  String
+  email         String    @unique
+  hostelNumber  String     
   hostelName    String
-  registrationId String
-  role          String
+  registrationId String   @unique
+  role          String    @default("admin")
+  password      String    
 }
 
 model OrderBill {
