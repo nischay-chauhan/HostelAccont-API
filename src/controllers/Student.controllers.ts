@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError";
 import { asyncHandler } from "../utils/AsyncHandler";
 import bcrypt from "bcrypt";
 import { ApiResponse } from "../utils/Apiresponse";
-
+import jwt from "jsonwebtoken";
 const prisma = new PrismaClient();
 
 const RegisterStudent = asyncHandler(async (req, res) => {
@@ -45,4 +45,34 @@ const RegisterStudent = asyncHandler(async (req, res) => {
     return res.status(201).json(new ApiResponse(200, newStudent, "Student registered successfully"));
 });
 
-export { RegisterStudent };
+
+const StudentLogin = asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        throw new ApiError(400, "Please provide email and password");
+    }
+
+    const student = await prisma.student.findUnique({
+        where: { email }
+    });
+
+    if (!student) {
+        throw new ApiError(401, "Invalid email or password");
+    }
+    const passwordMatch = await bcrypt.compare(password, student.password);
+
+    if (!passwordMatch) {
+        throw new ApiError(401, "Invalid email or password");
+    }
+
+    const token = jwt.sign(
+        { userId: student.id, email: student.email },
+        process.env.JWT_SECRET || 'asasassasasasasa', 
+        { expiresIn: "1h" } 
+    );
+
+    return res.status(200).json(new ApiResponse(200, { token }, "Login successful"));
+});
+
+export { RegisterStudent , StudentLogin };
