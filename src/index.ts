@@ -4,6 +4,7 @@ import { getClient } from "./db/pg";
 import cookieParser from "cookie-parser"
 import dotenv from "dotenv";
 import studentRouter from "./routes/user.route";
+import inchargeRouter from "./routes/incharge.route"
 dotenv.config();
 const app = express();
 app.use(express.json());
@@ -30,6 +31,7 @@ client.connect(function (err: Error) {
 });
 
 app.use("/api/v1/student" , studentRouter);
+app.use("/api/v1/incharge" , inchargeRouter);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

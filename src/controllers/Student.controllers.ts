@@ -22,6 +22,14 @@ const RegisterStudent = asyncHandler(async (req, res) => {
         throw new ApiError(409, "User already exists with the same email id ");
     }
 
+    const existedIncharge = await prisma.incharge.findUnique({
+        where: { email }
+      });
+    
+      if(existedIncharge) {
+        throw new ApiError(409, "An Incharge already exists with the same email id soo he cant be a student  ");
+      }
+
     const hashPassword = await bcrypt.hash(password, 10);
     const newStudent = await prisma.student.create({
         data: {
