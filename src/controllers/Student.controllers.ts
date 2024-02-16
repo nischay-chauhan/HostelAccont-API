@@ -86,5 +86,27 @@ const StudentLogin = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, { token }, "Login successful"));
 });
 
+const seeOrderHistory = asyncHandler(async (req, res) => {
+    const { studentId } = req.params;
+    const orders = await prisma.orderBill.findMany({
+        where: {
+            buyerId: {
+                equals: parseInt(studentId) 
+            }
+        }
+    });
 
-export { RegisterStudent , StudentLogin };
+    if (!orders || orders.length === 0) {
+        throw new ApiError(404, "No orders found for the user");
+    }
+
+    res.status(200).json({
+        success: true,
+        orders: orders
+    });
+});
+
+
+
+
+export { RegisterStudent , StudentLogin , seeOrderHistory };
