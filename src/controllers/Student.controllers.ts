@@ -68,6 +68,7 @@ const StudentLogin = asyncHandler(async (req, res) => {
     if (!student) {
         throw new ApiError(401, "Invalid email or password");
     }
+
     const passwordMatch = await bcrypt.compare(password, student.password);
 
     if (!passwordMatch) {
@@ -75,12 +76,15 @@ const StudentLogin = asyncHandler(async (req, res) => {
     }
 
     const token = jwt.sign(
-        { userId: student.id, email: student.email },
+        { userId: student.id, email: student.email , role : "student", },
         process.env.JWT_SECRET || 'asasassasasasasa', 
         { expiresIn: "1h" } 
     );
 
+    res.cookie("token", token, { httpOnly: true });
+
     return res.status(200).json(new ApiResponse(200, { token }, "Login successful"));
 });
+
 
 export { RegisterStudent , StudentLogin };
