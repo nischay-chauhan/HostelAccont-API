@@ -242,6 +242,22 @@ const getInchargeProfile = asyncHandler(async (req, res) => {
 
 })
 
+const getStudentLivingInHostel = asyncHandler(async (req, res) => {
+  const InchargeHostelNumber = req?.user?.hostelNumber;
+  const students = await prisma.student.findMany({
+    where: {
+      hostelNumber: InchargeHostelNumber
+    },
+  })
+
+  if(!students){
+    return res.status(404).json(new ApiError(404, "No students found"));
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200, { students: students }, "Students retrieved successfully")
+  )
+})
 
 
-export { RegisterIncharge, LoginIncharge, AddItemsToStudentAccount , getStudentDetailsWithOrders , getInchargeProfile};
+export { RegisterIncharge, LoginIncharge, AddItemsToStudentAccount , getStudentDetailsWithOrders , getInchargeProfile , getStudentLivingInHostel};
