@@ -185,6 +185,10 @@ const getStudentDetailsWithOrders = asyncHandler(async (req, res) => {
     return res.status(404).json(new ApiError(404, "Student not found"));
   }
 
+  if(student.hostelNumber != req?.user?.hostelNumber){
+    throw new Error("Incharge does not have access to this student's account");
+  }
+
   const formattedOrders = student.orders.map(order => {
     return {
       ...order,
