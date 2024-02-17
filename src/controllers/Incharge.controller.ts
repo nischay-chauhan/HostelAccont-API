@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/AsyncHandler";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { ApiResponse } from "../utils/Apiresponse";
+import { formatDate } from "../utils/dateUtils";
 
 const prisma = new PrismaClient();
 
@@ -175,33 +176,35 @@ const getStudentDetailsWithOrders = asyncHandler(async (req, res) => {
     include: { orders: true },
   });
 
-  if(!student){
+  if (!student) {
     return res.status(404).json(new ApiError(404, "Student not found"));
   }
+
+  const formattedOrders = student.orders.map(order => {
+    return {
+      ...order,
+      createdAt: formatDate(order.createdAt),
+      updatedAt: formatDate(order.updatedAt)
+    };
+  });
 
   const studentWithOrders = {
-    student : {
-      id : student.id,
-      name : student.name,
-      email : student.email,
-      department : student.department,
-      semester : student.semester,
-      roomNumber : student.roomNumber,
-      hostelName : student.hostelName,
-      hostelRollNo : student.hostelRollNo,
-      hostelNumber : student.hostelNumber,
-      
+    student: {
+      id: student.id,
+      name: student.name,
+      email: student.email,
+      department: student.department,
+      semester: student.semester,
+      roomNumber: student.roomNumber,
+      hostelName: student.hostelName,
+      hostelRollNo: student.hostelRollNo,
+      hostelNumber: student.hostelNumber,
     },
-    orders : student.orders
-  }
-
-  if(!studentWithOrders){
-    return res.status(404).json(new ApiError(404, "Student not found"));
+    orders: formattedOrders
   }
 
   res.status(200).json(
     new ApiResponse(200, { student: studentWithOrders }, "Student details retrieved successfully")
-  )
-
-})
+  );
+});
 export { RegisterIncharge, LoginIncharge, AddItemsToStudentAccount , getStudentDetailsWithOrders};

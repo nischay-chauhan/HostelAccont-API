@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/AsyncHandler";
 import bcrypt from "bcrypt";
 import { ApiResponse } from "../utils/Apiresponse";
 import jwt from "jsonwebtoken";
+import { formatDate } from "../utils/dateUtils";
 
 const prisma = new PrismaClient();
 
@@ -128,10 +129,34 @@ const seeOrderHistory = asyncHandler(async (req, res) => {
     return res.status(404).json(new ApiError(404, "No orders found for the user"));
   }
 
+  const formattedOrders = orders.map(order => {
+    return {
+      ...order,
+      createdAt: formatDate(order.createdAt),
+      updatedAt: formatDate(order.updatedAt)
+    };
+  })
+
   return res.status(200).json({
     success: true,
-    orders: orders,
+    orders: formattedOrders,
   });
 });
 
-export { RegisterStudent, StudentLogin, seeOrderHistory };
+const getStudentProfile = asyncHandler(async (req, res) => {
+  if(!req.user){
+    return res.status(401).json(new ApiError(401, "Please login first"));
+  }
+  const userId = req.user.id
+  const student = await prisma.student.findUnique({
+    where: { id: userId },
+  });
+  
+  if(!student){
+    return res.status(404).json(new ApiError(404, "Student not found"));
+  }
+
+  return res.status(200).json(new ApiResponse(200, student, "Profile fetched successfully"));
+});
+
+export { RegisterStudent, StudentLogin, seeOrderHistory , getStudentProfile};
