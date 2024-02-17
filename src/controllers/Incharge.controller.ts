@@ -121,6 +121,7 @@ const LoginIncharge = asyncHandler(async (req, res) => {
 });
 
 const AddItemsToStudentAccount = asyncHandler(async (req, res) => {
+
   const { studentId } = req.params;
   const { itemName, itemPrice } = req.body;
 
@@ -133,6 +134,10 @@ const AddItemsToStudentAccount = asyncHandler(async (req, res) => {
 
       if (!student) {
         throw new Error("Student not found");
+      }
+
+      if(student.hostelNumber != req?.user?.hostelNumber){
+        throw new Error("Incharge does not have access to this student's account");
       }
 
       const newOrder = await prisma.orderBill.create({
@@ -207,4 +212,36 @@ const getStudentDetailsWithOrders = asyncHandler(async (req, res) => {
     new ApiResponse(200, { student: studentWithOrders }, "Student details retrieved successfully")
   );
 });
-export { RegisterIncharge, LoginIncharge, AddItemsToStudentAccount , getStudentDetailsWithOrders};
+
+const getInchargeProfile = asyncHandler(async (req, res) => {
+  if(!req.user){
+    return res.status(401).json(new ApiError(401, "Please login first"));
+  }
+  const InchargeId = req.user.id;
+  const Incharge = await prisma.incharge.findUnique({
+    where: { id: InchargeId },
+    select : {
+      id: true,
+      name: true,
+      email: true,
+      hostelNumber: true,
+      hostelName: true,
+      registrationId: true,
+      createdAt: true,
+      updatedAt: true,
+    }
+  })
+
+  if (!Incharge) {
+    throw new ApiError(404, 'Incharge not found');
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200, { incharge: Incharge }, "Incharge details retrieved successfully")
+  )
+
+})
+
+
+
+export { RegisterIncharge, LoginIncharge, AddItemsToStudentAccount , getStudentDetailsWithOrders , getInchargeProfile};
