@@ -1,17 +1,17 @@
 import { Client } from 'pg';
 
 export function getClient(): Client {
-    const config = {
-        user: process.env.PG_USER || '', 
-        password: process.env.PG_PASSWORD || '', 
-        host: process.env.PG_HOST || '', 
-        port: parseInt(process.env.PG_PORT || '0'), 
-        database: process.env.PG_DATABASE || '', 
-        ssl: {
-            rejectUnauthorized: process.env.PG_SSL_REJECT_UNAUTHORIZED === 'true',
-            ca: process.env.PG_SSL_CA || '', 
-        },
-    };
-    const client = new Client(config);
+    const connectionString = process.env.DATABASE_URL;
+    if (!connectionString) {
+        throw new Error('DATABASE_URL is not defined in environment variables');
+    }
+    
+    const client = new Client({
+        connectionString,
+        ssl: process.env.NODE_ENV === 'production' ? {
+            rejectUnauthorized: false
+        } : undefined
+    });
+    
     return client;
 }

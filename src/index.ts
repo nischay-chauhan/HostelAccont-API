@@ -11,28 +11,31 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 
-const PORT = 8000 || process.env.PORT;
+const PORT = process.env.PORT || 8000;
 
 const client: Client = getClient();
 
-client.connect(function (err: Error) {
-    if (err)
-        throw err;
-    client.query("SELECT VERSION()", [], function (err: Error, result: QueryResult) {
-        if (err)
-            throw err;
+async function startServer() {
+    try {
+        await client.connect();
+        console.log('Connected to PostgreSQL database');
+        
+        app.use("/api/v1/student" , studentRouter);
+        app.use("/api/v1/incharge" , inchargeRouter);
 
-        console.log(result.rows[0].version);
-        client.end(function (err: Error) {
-            if (err)
-                throw err;
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
         });
-    });
-});
+    } catch (error) {
+        console.error('Failed to connect to the database:', error);
+        process.exit(1);
+    }
+}
 
-app.use("/api/v1/student" , studentRouter);
-app.use("/api/v1/incharge" , inchargeRouter);
+startServer();
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Handle cleanup on app shutdown
+process.on('SIGTERM', () => {
+    client.end();
+    process.exit(0);
 });
