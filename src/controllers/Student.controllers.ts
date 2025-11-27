@@ -64,7 +64,7 @@ const RegisterStudent = asyncHandler(async (req, res) => {
       email,
       password: hashPassword,
       department,
-      semester,
+      semester: Number(semester),
       roomNumber,
       hostelName,
       hostelRollNo,

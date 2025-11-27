@@ -7,13 +7,21 @@ import studentRouter from "./routes/user.route";
 import inchargeRouter from "./routes/incharge.route";
 import pinoHttp from "pino-http";
 import rateLimit from "express-rate-limit";
+import swaggerUi from "swagger-ui-express";
+import swaggerJsdoc from "swagger-jsdoc";
 import { randomUUID } from "crypto";
 import { logger } from "./utils/logger";
+import { config } from "./utils/config";
+import { errorHandler } from "./middleware/errorHandler";
 dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+if (config.env !== "development") {
+    app.set("trust proxy", 1);
+}
 
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -23,6 +31,26 @@ const apiLimiter = rateLimit({
 });
 
 app.use(apiLimiter);
+
+const swaggerOptions: swaggerJsdoc.Options = {
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "Hostel Account API",
+            version: "1.0.0",
+        },
+        servers: [
+            {
+                url: "/api/v1",
+            },
+        ],
+    },
+    apis: ["./src/routes/*.ts"],
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(
     pinoHttp({
@@ -43,7 +71,7 @@ app.use(
     })
 );
 
-const PORT = process.env.PORT || 8000;
+const PORT = config.port;
 
 const client: Client = getClient();
 
@@ -72,6 +100,8 @@ async function startServer() {
         
         app.use("/api/v1/student" , studentRouter);
         app.use("/api/v1/incharge" , inchargeRouter);
+
+        app.use(errorHandler);
 
         app.listen(PORT, () => {
             logger.info({ port: PORT }, "Server is running");
