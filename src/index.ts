@@ -47,6 +47,24 @@ const PORT = process.env.PORT || 8000;
 
 const client: Client = getClient();
 
+app.get("/healthz", (req, res) => {
+    res.status(200).json({
+        status: "ok",
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString(),
+    });
+});
+
+app.get("/readyz", async (req, res) => {
+    try {
+        await client.query("SELECT 1");
+        return res.status(200).json({ status: "ok" });
+    } catch (error) {
+        logger.error({ err: error }, "Readiness check failed");
+        return res.status(503).json({ status: "error" });
+    }
+});
+
 async function startServer() {
     try {
         await client.connect();
