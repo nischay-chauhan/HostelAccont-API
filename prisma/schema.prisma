@@ -21,6 +21,7 @@ model Student {
   hostelRollNo  String    @unique
   roomNumber    String    
   orders        OrderBill[]
+  payments      Payment[]
   role          String    @default("student")
   password      String   
   createdAt     DateTime  @default(now()) @map("created_at")
@@ -48,4 +49,16 @@ model OrderBill {
   buyer         Student  @relation(fields: [buyerId], references: [id])
    createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
+}
+
+model Payment {
+  id          Int       @id @default(autoincrement())
+  amount      Float
+  status      String    @default("pending") // pending, paid, partial
+  dueDate     DateTime
+  paidDate    DateTime?
+  studentId   Int
+  student     Student   @relation(fields: [studentId], references: [id])
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 }

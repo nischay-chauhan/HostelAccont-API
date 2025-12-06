@@ -11,7 +11,7 @@ const isAdmin = (req: Request, res: Response, next: NextFunction) => {
         }
 
         const decodedToken: any = jwt.verify(token, process.env.JWT_SECRET || 'asasassasasasasa');
-        
+
         if (!decodedToken) {
             throw new ApiError(401, "Invalid token");
         }
@@ -22,7 +22,7 @@ const isAdmin = (req: Request, res: Response, next: NextFunction) => {
 
         next();
     } catch (error) {
-        next(error); 
+        next(error);
     }
 };
 

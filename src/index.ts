@@ -1,10 +1,12 @@
 import express from "express";
+import path from "path";
 import { Client, QueryResult } from "pg";
 import { getClient } from "./db/pg";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import studentRouter from "./routes/user.route";
 import inchargeRouter from "./routes/incharge.route";
+import analyticsRouter from "./routes/analytics.route";
 import pinoHttp from "pino-http";
 import rateLimit from "express-rate-limit";
 import swaggerUi from "swagger-ui-express";
@@ -18,6 +20,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Serve static files for dashboard
+app.use("/dashboard", express.static(path.join(__dirname, "../public")));
 
 if (config.env !== "development") {
     app.set("trust proxy", 1);
@@ -97,9 +102,10 @@ async function startServer() {
     try {
         await client.connect();
         logger.info("Connected to PostgreSQL database");
-        
-        app.use("/api/v1/student" , studentRouter);
-        app.use("/api/v1/incharge" , inchargeRouter);
+
+        app.use("/api/v1/student", studentRouter);
+        app.use("/api/v1/incharge", inchargeRouter);
+        app.use("/api/v1/analytics", analyticsRouter);
 
         app.use(errorHandler);
 
